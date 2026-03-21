@@ -29,9 +29,11 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean compile -B
+        working-directory: user-service
 
       - name: Run Tests
         run: mvn test -B
+        working-directory: user-service
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -70,8 +72,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          dockerfile: Dockerfile
+          context: user-service
+          dockerfile: user-service/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
