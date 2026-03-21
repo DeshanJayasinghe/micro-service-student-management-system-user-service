@@ -7,6 +7,7 @@ import com.sms.auth.repository.UserRepository;
 import com.sms.auth.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +22,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final UserEventProducer userEventProducer;
     private final UserDetailsServiceImpl userDetailsService;
+
+    @Autowired(required = false)
+    private UserEventProducer userEventProducer;
 
     public AuthResponse register(RegisterRequest request) {
         log.info("Registering user: {}", request.getUsername());
@@ -44,14 +47,16 @@ public class AuthService {
         User savedUser = userRepository.save(user);
         log.info("User registered successfully with ID: {}", savedUser.getId());
 
-        // Publish Kafka event
-        UserRegisteredEvent event = UserRegisteredEvent.builder()
-                .userId(savedUser.getId())
-                .username(savedUser.getUsername())
-                .email(savedUser.getEmail())
-                .role(savedUser.getRole().name())
-                .build();
-        userEventProducer.publishUserRegistered(event);
+        // Publish Kafka event (only if Kafka is enabled)
+        if (userEventProducer != null) {
+            UserRegisteredEvent event = UserRegisteredEvent.builder()
+                    .userId(savedUser.getId())
+                    .username(savedUser.getUsername())
+                    .email(savedUser.getEmail())
+                    .role(savedUser.getRole().name())
+                    .build();
+            userEventProducer.publishUserRegistered(event);
+        }
 
         var userDetails = userDetailsService.loadUserByUsername(savedUser.getUsername());
         String token = jwtService.generateToken(userDetails);
