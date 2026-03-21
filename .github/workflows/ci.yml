@@ -12,7 +12,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-test:
@@ -51,8 +50,14 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image_name: ${{ steps.lower.outputs.image_name }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Lowercase image name
+        id: lower
+        run: echo "image_name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -65,7 +70,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.lower.outputs.image_name }}
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-
@@ -96,5 +101,5 @@ jobs:
         with:
           containerAppName: sms-user-service
           resourceGroup: sms-resource-group
-          imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          imageToDeploy: ${{ env.REGISTRY }}/${{ needs.build-and-push.outputs.image_name }}:latest
         continue-on-error: true
