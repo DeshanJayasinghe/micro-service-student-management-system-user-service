@@ -1,0 +1,48 @@
+# Azure Container Apps deployment configuration
+# Deploy using: az containerapp create ...
+#
+# Prerequisites:
+# az login
+# az group create --name sms-rg --location eastus
+# az containerapp env create --name sms-env --resource-group sms-rg --location eastus
+
+auth_service:
+  name: sms-auth-service
+  image: ghcr.io/OWNER/REPO/auth-service:latest
+  target_port: 8081
+  ingress: external
+  min_replicas: 1
+  max_replicas: 3
+  env:
+    - name: DB_HOST
+      secretref: db-host
+    - name: DB_PASSWORD
+      secretref: db-password
+    - name: JWT_SECRET
+      secretref: jwt-secret
+    - name: KAFKA_BOOTSTRAP_SERVERS
+      value: "kafka:9092"
+
+user_service:
+  name: sms-user-service
+  image: ghcr.io/OWNER/REPO/user-service:latest
+  target_port: 8082
+  ingress: external
+  min_replicas: 1
+  max_replicas: 3
+
+course_service:
+  name: sms-course-service
+  image: ghcr.io/OWNER/REPO/course-service:latest
+  target_port: 8083
+  ingress: external
+  min_replicas: 1
+  max_replicas: 3
+
+marks_service:
+  name: sms-marks-service
+  image: ghcr.io/OWNER/REPO/marks-service:latest
+  target_port: 8084
+  ingress: external
+  min_replicas: 1
+  max_replicas: 3

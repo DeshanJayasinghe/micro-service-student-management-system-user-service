@@ -1,0 +1,582 @@
+{
+  "info": {
+    "name": "Student Management System - All APIs",
+    "description": "Complete API collection for all 4 microservices: Auth, User, Course, Marks",
+    "_postman_id": "sms-microservices-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "auth_url",   "value": "http://localhost:8081", "type": "string" },
+    { "key": "user_url",   "value": "http://localhost:8082", "type": "string" },
+    { "key": "course_url", "value": "http://localhost:8083", "type": "string" },
+    { "key": "marks_url",  "value": "http://localhost:8084", "type": "string" },
+    { "key": "token",      "value": "", "type": "string", "description": "Set after login — auto-filled by login test script" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth Service (8081)",
+      "item": [
+        {
+          "name": "Register Student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.token) { pm.collectionVariables.set('token', res.token); }",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token returned', () => pm.expect(res.token).to.not.be.empty);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{auth_url}}/api/auth/register", "host": ["{{auth_url}}"], "path": ["api", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_student\",\n  \"email\": \"john@sliit.lk\",\n  \"password\": \"password123\",\n  \"role\": \"STUDENT\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Teacher",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{auth_url}}/api/auth/register", "host": ["{{auth_url}}"], "path": ["api", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dr_smith\",\n  \"email\": \"smith@sliit.lk\",\n  \"password\": \"password123\",\n  \"role\": \"TEACHER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{auth_url}}/api/auth/register", "host": ["{{auth_url}}"], "path": ["api", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_user\",\n  \"email\": \"admin@sliit.lk\",\n  \"password\": \"admin123\",\n  \"role\": \"ADMIN\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.token) { pm.collectionVariables.set('token', res.token); }",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token present', () => pm.expect(res.token).to.not.be.empty);",
+                  "console.log('Token saved:', res.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{auth_url}}/api/auth/login", "host": ["{{auth_url}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_student\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/validate?token={{token}}",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "validate"],
+              "query": [{ "key": "token", "value": "{{token}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User Service (8082)",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{user_url}}/api/users", "host": ["{{user_url}}"], "path": ["api", "users"] }
+          }
+        },
+        {
+          "name": "Get All Students",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{user_url}}/api/users/students", "host": ["{{user_url}}"], "path": ["api", "users", "students"] }
+          }
+        },
+        {
+          "name": "Get All Teachers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{user_url}}/api/users/teachers", "host": ["{{user_url}}"], "path": ["api", "users", "teachers"] }
+          }
+        },
+        {
+          "name": "Get User Profile by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{user_url}}/api/users/1", "host": ["{{user_url}}"], "path": ["api", "users", "1"] }
+          }
+        },
+        {
+          "name": "Get User Profile by Username",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{user_url}}/api/users/username/john_student", "host": ["{{user_url}}"], "path": ["api", "users", "username", "john_student"] }
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{user_url}}/api/users/1", "host": ["{{user_url}}"], "path": ["api", "users", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"+94771234567\",\n  \"address\": \"123 Main St, Colombo\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete User Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{user_url}}/api/users/1", "host": ["{{user_url}}"], "path": ["api", "users", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Course Service (8083)",
+      "item": [
+        {
+          "name": "Create Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('course_id', res.id); }",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{course_url}}/api/courses", "host": ["{{course_url}}"], "path": ["api", "courses"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"SE4010\",\n  \"courseName\": \"Cloud Computing\",\n  \"description\": \"Current Trends in Software Engineering - Cloud Computing\",\n  \"credits\": 3,\n  \"teacherId\": 2,\n  \"teacherName\": \"Dr. Smith\",\n  \"maxEnrollment\": 30,\n  \"semester\": \"Semester 1\",\n  \"academicYear\": \"2026\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Courses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{course_url}}/api/courses", "host": ["{{course_url}}"], "path": ["api", "courses"] }
+          }
+        },
+        {
+          "name": "Get Course by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{course_url}}/api/courses/1", "host": ["{{course_url}}"], "path": ["api", "courses", "1"] }
+          }
+        },
+        {
+          "name": "Get Course by Code",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{course_url}}/api/courses/code/SE4010", "host": ["{{course_url}}"], "path": ["api", "courses", "code", "SE4010"] }
+          }
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{course_url}}/api/courses/1", "host": ["{{course_url}}"], "path": ["api", "courses", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseName\": \"Cloud Computing & DevOps\",\n  \"description\": \"Updated description\",\n  \"maxEnrollment\": 40,\n  \"status\": \"ACTIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{course_url}}/api/courses/1", "host": ["{{course_url}}"], "path": ["api", "courses", "1"] }
+          }
+        },
+        {
+          "name": "Enroll Student in Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.id) { pm.collectionVariables.set('enrollment_id', res.id); }",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{course_url}}/api/courses/1/enroll", "host": ["{{course_url}}"], "path": ["api", "courses", "1", "enroll"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": 1,\n  \"studentName\": \"John Doe\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Enrollments by Course",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{course_url}}/api/courses/1/enrollments", "host": ["{{course_url}}"], "path": ["api", "courses", "1", "enrollments"] }
+          }
+        },
+        {
+          "name": "Get Enrollments by Student",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{course_url}}/api/courses/enrollments/student/1", "host": ["{{course_url}}"], "path": ["api", "courses", "enrollments", "student", "1"] }
+          }
+        },
+        {
+          "name": "Drop Course Enrollment",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{course_url}}/api/courses/enrollments/1/drop", "host": ["{{course_url}}"], "path": ["api", "courses", "enrollments", "1", "drop"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Marks Service (8084)",
+      "item": [
+        {
+          "name": "Modules",
+          "item": [
+            {
+              "name": "Create Module",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.id) { pm.collectionVariables.set('module_id', res.id); }",
+                      "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": { "raw": "{{marks_url}}/api/modules", "host": ["{{marks_url}}"], "path": ["api", "modules"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"moduleCode\": \"SE4010-M1\",\n  \"moduleName\": \"Cloud Fundamentals\",\n  \"description\": \"Introduction to cloud computing concepts\",\n  \"courseId\": 1,\n  \"courseCode\": \"SE4010\",\n  \"credits\": 1,\n  \"teacherId\": 2\n}"
+                }
+              }
+            },
+            {
+              "name": "Get All Modules",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/modules", "host": ["{{marks_url}}"], "path": ["api", "modules"] }
+              }
+            },
+            {
+              "name": "Get Module by ID",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/modules/1", "host": ["{{marks_url}}"], "path": ["api", "modules", "1"] }
+              }
+            },
+            {
+              "name": "Get Modules by Course",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/modules/course/1", "host": ["{{marks_url}}"], "path": ["api", "modules", "course", "1"] }
+              }
+            },
+            {
+              "name": "Get Module by Code",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/modules/code/SE4010-M1", "host": ["{{marks_url}}"], "path": ["api", "modules", "code", "SE4010-M1"] }
+              }
+            },
+            {
+              "name": "Update Module",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": { "raw": "{{marks_url}}/api/modules/1", "host": ["{{marks_url}}"], "path": ["api", "modules", "1"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"moduleName\": \"Cloud Fundamentals (Updated)\",\n  \"description\": \"Updated module description\",\n  \"credits\": 2\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete Module",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/modules/1", "host": ["{{marks_url}}"], "path": ["api", "modules", "1"] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Marks",
+          "item": [
+            {
+              "name": "Add Mark - Assignment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var res = pm.response.json();",
+                      "if (res.id) { pm.collectionVariables.set('mark_id', res.id); }",
+                      "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": { "raw": "{{marks_url}}/api/marks", "host": ["{{marks_url}}"], "path": ["api", "marks"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentId\": 1,\n  \"studentName\": \"John Doe\",\n  \"moduleId\": 1,\n  \"courseId\": 1,\n  \"assessmentType\": \"ASSIGNMENT\",\n  \"marks\": 85.0,\n  \"maxMarks\": 100.0,\n  \"feedback\": \"Good work on cloud concepts\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Add Mark - Midterm",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": { "raw": "{{marks_url}}/api/marks", "host": ["{{marks_url}}"], "path": ["api", "marks"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentId\": 1,\n  \"studentName\": \"John Doe\",\n  \"moduleId\": 1,\n  \"courseId\": 1,\n  \"assessmentType\": \"MIDTERM\",\n  \"marks\": 72.0,\n  \"maxMarks\": 100.0,\n  \"feedback\": \"Needs improvement on Docker concepts\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Add Mark - Final",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": { "raw": "{{marks_url}}/api/marks", "host": ["{{marks_url}}"], "path": ["api", "marks"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentId\": 1,\n  \"studentName\": \"John Doe\",\n  \"moduleId\": 1,\n  \"courseId\": 1,\n  \"assessmentType\": \"FINAL\",\n  \"marks\": 90.0,\n  \"maxMarks\": 100.0,\n  \"feedback\": \"Excellent final exam performance\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Get Marks by Student",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/marks/student/1", "host": ["{{marks_url}}"], "path": ["api", "marks", "student", "1"] }
+              }
+            },
+            {
+              "name": "Get Marks by Student + Course",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/marks/student/1/course/1", "host": ["{{marks_url}}"], "path": ["api", "marks", "student", "1", "course", "1"] }
+              }
+            },
+            {
+              "name": "Get Marks by Module",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/marks/module/1", "host": ["{{marks_url}}"], "path": ["api", "marks", "module", "1"] }
+              }
+            },
+            {
+              "name": "Update Mark",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": { "raw": "{{marks_url}}/api/marks/1", "host": ["{{marks_url}}"], "path": ["api", "marks", "1"] },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"marks\": 88.0,\n  \"maxMarks\": 100.0,\n  \"feedback\": \"Revised after re-check\",\n  \"assessmentType\": \"ASSIGNMENT\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Generate Grade Report (triggers GPA update via Kafka)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+                "url": { "raw": "{{marks_url}}/api/marks/report/student/1/course/1", "host": ["{{marks_url}}"], "path": ["api", "marks", "report", "student", "1", "course", "1"] }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Health Checks",
+      "item": [
+        {
+          "name": "Auth Service Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{auth_url}}/actuator/health", "host": ["{{auth_url}}"], "path": ["actuator", "health"] }
+          }
+        },
+        {
+          "name": "Course Service Health + Circuit Breaker (userService CB)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{course_url}}/actuator/health", "host": ["{{course_url}}"], "path": ["actuator", "health"] }
+          }
+        },
+        {
+          "name": "Marks Service Health + Circuit Breaker (courseService CB)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{marks_url}}/actuator/health", "host": ["{{marks_url}}"], "path": ["actuator", "health"] }
+          }
+        },
+        {
+          "name": "Course Service - Circuit Breaker Metrics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{course_url}}/actuator/circuitbreakers", "host": ["{{course_url}}"], "path": ["actuator", "circuitbreakers"] }
+          }
+        },
+        {
+          "name": "Marks Service - Circuit Breaker Metrics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{marks_url}}/actuator/circuitbreakers", "host": ["{{marks_url}}"], "path": ["actuator", "circuitbreakers"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Swagger UIs",
+      "item": [
+        {
+          "name": "Auth Service Swagger",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{auth_url}}/swagger-ui.html", "host": ["{{auth_url}}"], "path": ["swagger-ui.html"] }
+          }
+        },
+        {
+          "name": "User Service Swagger",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{user_url}}/swagger-ui.html", "host": ["{{user_url}}"], "path": ["swagger-ui.html"] }
+          }
+        },
+        {
+          "name": "Course Service Swagger",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{course_url}}/swagger-ui.html", "host": ["{{course_url}}"], "path": ["swagger-ui.html"] }
+          }
+        },
+        {
+          "name": "Marks Service Swagger",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{marks_url}}/swagger-ui.html", "host": ["{{marks_url}}"], "path": ["swagger-ui.html"] }
+          }
+        }
+      ]
+    }
+  ]
+}
