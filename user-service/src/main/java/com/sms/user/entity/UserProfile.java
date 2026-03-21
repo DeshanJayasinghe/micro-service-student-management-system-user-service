@@ -61,10 +61,6 @@ public class UserProfile {
     @Builder.Default
     private boolean active = true;
 
-    @Column(name = "is_deleted")
-    @Builder.Default
-    private boolean deleted = false;
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
