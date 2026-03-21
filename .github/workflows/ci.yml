@@ -94,8 +94,6 @@ jobs:
       - name: Deploy to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:
-          appSourcePath: ${{ github.workspace }}
-          acrName: ${{ secrets.ACR_NAME }}
           containerAppName: sms-user-service
           resourceGroup: sms-resource-group
           imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
