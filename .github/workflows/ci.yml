@@ -31,7 +31,7 @@ jobs:
         working-directory: user-service
 
       - name: Run Tests
-        run: mvn test -B
+        run: mvn verify -B
         working-directory: user-service
 
       - name: SonarCloud Scan
