@@ -108,10 +108,11 @@ jobs:
                 db-password="${{ secrets.DB_PASSWORD }}" \
                 jwt-secret="${{ secrets.JWT_SECRET }}" \
                 auth-service-url="${{ secrets.AUTH_SERVICE_URL }}"
+            IMAGE_REF=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" | tr '[:upper:]' '[:lower:]')
             az containerapp update \
               --name sms-user-service \
               --resource-group sms-resource-group \
-              --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+              --image "$IMAGE_REF" \
               --set-env-vars \
                 DB_HOST=secretref:db-host \
                 DB_PORT="5433" \
