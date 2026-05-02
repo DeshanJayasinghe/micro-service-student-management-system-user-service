@@ -158,13 +158,3 @@ jobs:
                 KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093"
           fi
 
-      - name: Deploy to Azure Container Apps
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          containerAppName: sms-user-service
-          resourceGroup: sms-resource-group
-          imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          disableTelemetry: false
-        env:
-          REGISTRY: ghcr.io
-          IMAGE_NAME: ${{ github.repository }}
