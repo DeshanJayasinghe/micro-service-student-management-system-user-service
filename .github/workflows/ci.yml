@@ -94,30 +94,67 @@ jobs:
           set -euo pipefail
           az extension add --name containerapp || true
 
-          az containerapp secret set \
+          PROVISION_STATE=$(az containerapp show \
             --name sms-user-service \
             --resource-group sms-resource-group \
-            --secrets \
-              eh-jaas="org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\$ConnectionString\" password=\"${{ secrets.EVENTHUB_CONN }}\";" \
-              db-password="${{ secrets.DB_PASSWORD }}" \
-              jwt-secret="${{ secrets.JWT_SECRET }}"
+            --query "properties.provisioningState" -o tsv 2>/dev/null || echo "NotFound")
 
-          az containerapp update \
-            --name sms-user-service \
-            --resource-group sms-resource-group \
-            --image "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" \
-            --set-env-vars \
-              SPRING_KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093" \
-              SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL="SASL_SSL" \
-              SPRING_KAFKA_PROPERTIES_SASL_MECHANISM="PLAIN" \
-              SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG="secretref:eh-jaas" \
-              DB_HOST="${{ secrets.DB_HOST }}" \
-              DB_PORT="5433" \
-              DB_USER="${{ secrets.DB_USER }}" \
-              DB_PASSWORD="secretref:db-password" \
-              JWT_SECRET="secretref:jwt-secret" \
-              AUTH_SERVICE_URL="${{ secrets.AUTH_SERVICE_URL }}" \
-              KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093"
+          if [ "$PROVISION_STATE" != "Succeeded" ]; then
+            echo "Container App not ready (state: $PROVISION_STATE). Creating..."
+            az containerapp create \
+              --name sms-user-service \
+              --resource-group sms-resource-group \
+              --environment sms-container-env \
+              --image "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" \
+              --registry-server ghcr.io \
+              --registry-username ${{ github.actor }} \
+              --registry-password ${{ secrets.GITHUB_TOKEN }} \
+              --target-port 8082 \
+              --ingress external \
+              --min-replicas 1 \
+              --secrets \
+                eh-jaas="org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\$ConnectionString\" password=\"${{ secrets.EVENTHUB_CONN }}\";" \
+                db-password="${{ secrets.DB_PASSWORD }}" \
+                jwt-secret="${{ secrets.JWT_SECRET }}" \
+              --env-vars \
+                SPRING_KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093" \
+                SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL="SASL_SSL" \
+                SPRING_KAFKA_PROPERTIES_SASL_MECHANISM="PLAIN" \
+                SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG="secretref:eh-jaas" \
+                DB_HOST="${{ secrets.DB_HOST }}" \
+                DB_PORT="5433" \
+                DB_USER="${{ secrets.DB_USER }}" \
+                DB_PASSWORD="secretref:db-password" \
+                JWT_SECRET="secretref:jwt-secret" \
+                AUTH_SERVICE_URL="${{ secrets.AUTH_SERVICE_URL }}" \
+                KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093"
+          else
+            echo "Container App exists. Updating secrets and image..."
+            az containerapp secret set \
+              --name sms-user-service \
+              --resource-group sms-resource-group \
+              --secrets \
+                eh-jaas="org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\$ConnectionString\" password=\"${{ secrets.EVENTHUB_CONN }}\";" \
+                db-password="${{ secrets.DB_PASSWORD }}" \
+                jwt-secret="${{ secrets.JWT_SECRET }}"
+
+            az containerapp update \
+              --name sms-user-service \
+              --resource-group sms-resource-group \
+              --image "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" \
+              --set-env-vars \
+                SPRING_KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093" \
+                SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL="SASL_SSL" \
+                SPRING_KAFKA_PROPERTIES_SASL_MECHANISM="PLAIN" \
+                SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG="secretref:eh-jaas" \
+                DB_HOST="${{ secrets.DB_HOST }}" \
+                DB_PORT="5433" \
+                DB_USER="${{ secrets.DB_USER }}" \
+                DB_PASSWORD="secretref:db-password" \
+                JWT_SECRET="secretref:jwt-secret" \
+                AUTH_SERVICE_URL="${{ secrets.AUTH_SERVICE_URL }}" \
+                KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093"
+          fi
 
       - name: Deploy to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
