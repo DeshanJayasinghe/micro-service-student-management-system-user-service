@@ -1,9 +1,15 @@
 server:
   port: 8082
 
+kafka:
+  enabled: ${KAFKA_ENABLED:false}
+
 spring:
   application:
     name: user-service
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:postgres}
     username: ${DB_USER:postgres}
@@ -11,9 +17,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     security:
