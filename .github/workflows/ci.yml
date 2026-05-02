@@ -102,18 +102,11 @@ jobs:
               --name sms-user-service \
               --resource-group sms-resource-group \
               --secrets \
+                eh-jaas="org.apache.kafka.common.security.plain.PlainLoginModule required username=\"\$ConnectionString\" password=\"${{ secrets.EVENTHUB_CONN }}\";" \
                 db-host="${{ secrets.DB_HOST }}" \
-                db-port="${{ secrets.DB_PORT }}" \
-                db-name="${{ secrets.DB_NAME }}" \
                 db-user="${{ secrets.DB_USER }}" \
                 db-password="${{ secrets.DB_PASSWORD }}" \
-                db-sslmode="${{ secrets.DB_SSLMODE }}" \
                 jwt-secret="${{ secrets.JWT_SECRET }}" \
-                jwt-expiration="${{ secrets.JWT_EXPIRATION }}" \
-                kafka-bootstrap-servers="${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}" \
-                kafka-security-protocol="${{ secrets.KAFKA_SECURITY_PROTOCOL }}" \
-                kafka-sasl-mechanism="${{ secrets.KAFKA_SASL_MECHANISM }}" \
-                kafka-sasl-jaas-config="${{ secrets.KAFKA_SASL_JAAS_CONFIG }}" \
                 auth-service-url="${{ secrets.AUTH_SERVICE_URL }}"
             az containerapp update \
               --name sms-user-service \
@@ -121,17 +114,14 @@ jobs:
               --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
               --set-env-vars \
                 DB_HOST=secretref:db-host \
-                DB_PORT=secretref:db-port \
-                DB_NAME=secretref:db-name \
+                DB_PORT="5433" \
                 DB_USER=secretref:db-user \
                 DB_PASSWORD=secretref:db-password \
-                DB_SSLMODE=secretref:db-sslmode \
                 JWT_SECRET=secretref:jwt-secret \
-                JWT_EXPIRATION=secretref:jwt-expiration \
-                KAFKA_BOOTSTRAP_SERVERS=secretref:kafka-bootstrap-servers \
-                SPRING_KAFKA_BOOTSTRAP_SERVERS=secretref:kafka-bootstrap-servers \
-                SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL=secretref:kafka-security-protocol \
-                SPRING_KAFKA_PROPERTIES_SASL_MECHANISM=secretref:kafka-sasl-mechanism \
-                SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG=secretref:kafka-sasl-jaas-config \
+                SPRING_KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093" \
+                SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL="SASL_SSL" \
+                SPRING_KAFKA_PROPERTIES_SASL_MECHANISM="PLAIN" \
+                SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG=secretref:eh-jaas \
+                KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093" \
                 AUTH_SERVICE_URL=secretref:auth-service-url
 
