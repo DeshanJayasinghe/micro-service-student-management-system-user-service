@@ -94,6 +94,8 @@ jobs:
           set -euo pipefail
           az extension add --name containerapp || true
 
+          IMAGE_REF=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" | tr '[:upper:]' '[:lower:]')
+
           PROVISION_STATE=$(az containerapp show \
             --name sms-user-service \
             --resource-group sms-resource-group \
@@ -105,7 +107,7 @@ jobs:
               --name sms-user-service \
               --resource-group sms-resource-group \
               --environment sms-environment \
-              --image "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" \
+              --image "$IMAGE_REF" \
               --registry-server ghcr.io \
               --registry-username ${{ github.actor }} \
               --registry-password ${{ secrets.GITHUB_TOKEN }} \
@@ -141,7 +143,7 @@ jobs:
             az containerapp update \
               --name sms-user-service \
               --resource-group sms-resource-group \
-              --image "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" \
+              --image "$IMAGE_REF" \
               --set-env-vars \
                 SPRING_KAFKA_BOOTSTRAP_SERVERS="sms-kafka-ns-v3.servicebus.windows.net:9093" \
                 SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL="SASL_SSL" \
@@ -161,7 +163,7 @@ jobs:
         with:
           containerAppName: sms-user-service
           resourceGroup: sms-resource-group
-          imageToDeploy: ${{ env.REGISTRY }}/${{ github.repository }}:latest
+          imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           disableTelemetry: false
         env:
           REGISTRY: ghcr.io
