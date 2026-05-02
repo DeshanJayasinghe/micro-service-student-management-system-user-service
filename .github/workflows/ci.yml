@@ -104,7 +104,7 @@ jobs:
             az containerapp create \
               --name sms-user-service \
               --resource-group sms-resource-group \
-              --environment sms-container-env \
+              --environment sms-environment \
               --image "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" \
               --registry-server ghcr.io \
               --registry-username ${{ github.actor }} \
